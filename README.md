@@ -1,30 +1,23 @@
-# React + TypeScript + Vite
+# Capstone Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Author - Cody Raymond
+StudentID -
+Degree Program - Computer Science
 
-Currently, two official plugins are available:
+## Application Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This application does the following things:
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Frontend
 
-- Configure the top-level `parserOptions` property like this:
+The Graphic User Interface (GUI) is created through a React Application, and utilizes Typescript to maintain strong typing throughout the application.
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+### Backend
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+The server is written in Golang because of its strong typing, C-style programming mannerisms, and general syntactic preferences. Golang is becoming more of an industry standard/best practice for its design intentions and security implementations.
+
+### Database
+
+The database is Postgres. This is a personal preference, but there are some advantages to using postgres such as gracefully handling concurrent user interactions and certain language-specific features.
