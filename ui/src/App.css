@@ -1,2 +1,12 @@
-.app {
+.side-navigation {
+  height: 100%;
+  width: 75px;
+  position: absolute;
+  transition: 0.5s ease-out;
+  background-color: rgb(35, 95, 137);
+  color: white;
+}
+
+.nav-open {
+  width: 250px;
 }

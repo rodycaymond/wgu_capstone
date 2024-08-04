@@ -1,7 +1,38 @@
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import { WelcomePage } from "./pages/WelcomePage";
+import { Redirect } from "./pages/Redirect";
+import { SideNav } from "./navigation/SideNav";
+import { useEffect, useState } from "react";
 
 function App() {
-  return <div className="app">hello capstone</div>;
+  // Single Page Application (SPA) feel
+  const [height, setHeight] = useState<number>(0);
+
+  const setViewPort = () => {
+    setHeight(window.innerHeight);
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", setViewPort);
+
+    // useEffect return will cleanup/remove the event listener when this component unmounts from the DOM
+    return () => window.removeEventListener("resize", setViewPort);
+  }, []);
+
+  const routes = (
+    <Routes>
+      <Route path="*" element={<Redirect />} />
+      <Route path="/" element={<WelcomePage />} />
+      <Route path="/compare" element={<div>Compare Pokemon</div>} />
+    </Routes>
+  );
+  return (
+    <div style={{ height: height, maxHeight: height, width: "100%" }}>
+      <SideNav />
+      {routes}
+    </div>
+  );
 }
 
 export default App;
