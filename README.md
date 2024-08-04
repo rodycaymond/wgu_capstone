@@ -1,8 +1,8 @@
 # Capstone Project
 
-Author - Cody Raymond
-StudentID - 007462919
-Degree Program - Computer Science
+Author - Cody Raymond\n
+StudentID - 007462919\n
+Degree Program - Computer Science\n
 
 ## Application Overview
 
