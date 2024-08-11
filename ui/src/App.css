@@ -24,14 +24,13 @@
 }
 
 .app-icon-open {
-  height: 150px;
-  width: 150px;
+  height: 100px;
+  width: 100px;
   transition: 0.5s ease-out;
 }
 
 .page-container {
   width: 95%;
-  height: 100%;
   margin-left: 5%;
 }
 
@@ -115,7 +114,7 @@
   justify-content: space-between;
 }
 .compare-page-content-section {
-  width: 100%;
+  width: 48%;
   height: 100%;
 }
 
@@ -124,15 +123,43 @@
   flex-direction: column;
   margin: 128px 0 0 0;
   width: 100%;
+  max-height: 80%;
 }
 
 .compare-left-title {
   font-size: 36px;
+  margin-bottom: 24px;
 }
 
 .comparison-container {
   margin: 36px 0;
   max-height: 70%;
+  overflow-y: auto;
+}
+
+.compare-block {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.percentage-container {
+  width: 50%;
+  height: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.percentage {
+  height: 100%;
+  width: 75%;
+}
+
+.percent {
+  width: 75%;
+  height: 100%;
+  background-color: rgb(223, 186, 0);
 }
 
 .add-container {
@@ -148,6 +175,7 @@
   background-color: rgb(83, 178, 232);
   color: white;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .search-container {

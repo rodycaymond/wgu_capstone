@@ -13,6 +13,7 @@ export const Compare: React.FC = () => {
   const { pokedexData } = useContext(GlobalContext);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [comparisons, setComparisons] = useState<string[]>([]);
+  const [selectValue, setSelectValue] = useState<SelectOption>();
 
   useEffect(() => {
     setOptions(
@@ -31,25 +32,37 @@ export const Compare: React.FC = () => {
         <div className="compare-page-content-section">
           <div className="left-content">
             <div className="compare-left-title">Chance of Success</div>
-            <div className="comparison-container">
-              {[...comparisons].map((c) => (
-                <ComparisonBlock url={c} />
-              ))}
-            </div>
             <div className="add-container">
               <div
                 className="add-button"
-                onClick={() =>
-                  setComparisons([
-                    "https://pokeapi.co/api/v2/pokemon-species/1/",
-                  ])
-                }
+                onClick={() => {
+                  if (selectValue) {
+                    setComparisons([...comparisons, selectValue.value]);
+                    setSelectValue(undefined);
+                  }
+                }}
               >
                 Add +
               </div>
               <div className="search-container">
-                <Select options={options} />
+                <Select
+                  options={options}
+                  value={selectValue || null}
+                  onChange={(o) => (o ? setSelectValue(o) : null)}
+                  styles={{
+                    container: (styles) => ({ ...styles, cursor: "pointer" }),
+                    valueContainer: (styles) => ({
+                      ...styles,
+                      cursor: "pointer",
+                    }),
+                  }}
+                />
               </div>
+            </div>
+            <div className="comparison-container">
+              {[...comparisons].map((c) => (
+                <ComparisonBlock url={c} />
+              ))}
             </div>
           </div>
         </div>

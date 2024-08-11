@@ -3,15 +3,16 @@ import "./App.css";
 import { WelcomePage } from "./pages/WelcomePage";
 import { Redirect } from "./pages/Redirect";
 import { SideNav } from "./navigation/SideNav";
-import { useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import Compare from "./pages/Compare";
+import { GlobalContext } from "./CapstoneContext";
 
 function App() {
   // Single Page Application (SPA) feel
-  const [height, setHeight] = useState<number>(0);
+  const { appHeight, setAppHeight } = useContext(GlobalContext);
 
   const setViewPort = () => {
-    setHeight(window.innerHeight);
+    setAppHeight(window.innerHeight);
   };
 
   useEffect(() => {
@@ -19,7 +20,7 @@ function App() {
 
     // useEffect return will cleanup/remove the event listener when this component unmounts from the DOM
     return () => window.removeEventListener("resize", setViewPort);
-  }, []);
+  });
 
   const routes = (
     <Routes>
@@ -29,7 +30,14 @@ function App() {
     </Routes>
   );
   return (
-    <div style={{ height: height, maxHeight: height, width: "100%" }}>
+    <div
+      style={{
+        height: appHeight,
+        maxHeight: appHeight,
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       <SideNav />
       {routes}
     </div>
