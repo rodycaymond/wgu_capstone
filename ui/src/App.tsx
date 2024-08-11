@@ -4,6 +4,7 @@ import { WelcomePage } from "./pages/WelcomePage";
 import { Redirect } from "./pages/Redirect";
 import { SideNav } from "./navigation/SideNav";
 import { useEffect, useState } from "react";
+import Compare from "./pages/Compare";
 
 function App() {
   // Single Page Application (SPA) feel
@@ -24,7 +25,7 @@ function App() {
     <Routes>
       <Route path="*" element={<Redirect />} />
       <Route path="/" element={<WelcomePage />} />
-      <Route path="/compare" element={<div>Compare Pokemon</div>} />
+      <Route path="/compare" element={<Compare />} />
     </Routes>
   );
   return (
