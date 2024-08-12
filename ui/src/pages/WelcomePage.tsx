@@ -1,4 +1,5 @@
 import PageContainer from "./PageContainer";
+import "../App.css";
 
 export const WelcomePage: React.FC = () => {
   return (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPokemon, getSprite } from "../api/api";
+import "../App.css";
 
 interface ComparisonBlockProps {
   url: string;

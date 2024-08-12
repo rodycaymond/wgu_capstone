@@ -10,6 +10,6 @@ export const getGenerationOnePokedex = async (): Promise<object> => {
 };
 
 export const getPokemon = async (url: string): Promise<object> => {
-  const response = await axios.get(url);
+  const response = await axios.get(url.replace("-species", ""));
   return response.data;
 };

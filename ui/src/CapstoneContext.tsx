@@ -20,7 +20,7 @@ export const CapstoneContext: React.FC<CapstoneContextProps> = ({
   children,
 }) => {
   const [pokedexData, setPokedexData] = useState<object[]>([]);
-  const [appHeight, setAppHeight] = useState<number>(0);
+  const [appHeight, setAppHeight] = useState<number>(window.innerHeight);
 
   if (!pokedexData.length) {
     getGenerationOnePokedex()
