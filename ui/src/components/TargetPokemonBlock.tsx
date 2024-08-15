@@ -21,6 +21,10 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
     });
   }, []);
 
+  if (!pokemon) {
+    return <></>;
+  }
+
   return (
     <>
       <div className="target-container">
@@ -43,12 +47,14 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
             ...compareStats,
             {
               pokemon: pokemon["name" as keyof typeof pokemon],
-              stats: extractStats(pokemon["stats" as keyof typeof pokemon]),
+              stats: extractStats(
+                pokemon["stats" as keyof typeof pokemon] || []
+              ),
             },
           ].map((s) => {
             return { ...s.stats, name: s.pokemon };
           })}
-          keys={Object.keys(compareStats[0].stats)}
+          keys={Object.keys(compareStats[0]?.stats || {})}
           indexBy="name"
           margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
           padding={0.3}

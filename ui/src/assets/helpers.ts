@@ -31,6 +31,8 @@ export const extractStats = (stats: PokemonStats[]): StatsOnly => {
     speed: "0",
   };
 
+  if (!stats.length) return so;
+
   for (let i = 0; i < stats.length; i++) {
     so[stats[i].stat.name as keyof typeof so] = stats[i].base_stat;
   }
