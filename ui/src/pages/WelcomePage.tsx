@@ -9,10 +9,12 @@ export const WelcomePage: React.FC = () => {
         <div>
           The pokemon comparator will pit the pokemon of your choice against
           each other to determine which might have a higher success rate in
-          battle. All the analysis performed is solely statistically based and
+          battle. The prediction calculated is solely statistically based and
           does not take into account game RNG (random number generator - or
           luck!) Or individual moves a pokemon can perform which may enhance
-          their battle stats momentarily.
+          their battle stats momentarily. Sure, we could calculate using the
+          game's mechanics, which pokemon would be guaranteed to succeed,
+          because what's the fun in that?
         </div>
         <br />
         <div>

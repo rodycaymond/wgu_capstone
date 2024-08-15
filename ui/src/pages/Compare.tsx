@@ -5,10 +5,20 @@ import { GlobalContext } from "../CapstoneContext";
 import ComparisonBlock from "../components/ComparisonBlock";
 import "../App.css";
 import TargetPokemonBlock from "../components/TargetPokemonBlock";
+import {
+  extractStats,
+  PokemonStats,
+  StatsAndPokemonName,
+} from "../assets/helpers";
 
 type SelectOption = {
   label: string;
   value: string;
+};
+
+type StatMap = {
+  id: string;
+  stats: StatsAndPokemonName;
 };
 
 export const Compare: React.FC = () => {
@@ -24,6 +34,7 @@ export const Compare: React.FC = () => {
   const [targetPokemon, setTargetPokemon] = useState<string | undefined>(
     undefined
   );
+  const [pokeStats, setPokeStats] = useState<StatMap[]>([]);
 
   useEffect(() => {
     setOptions(
@@ -86,7 +97,23 @@ export const Compare: React.FC = () => {
             </div>
             <div className="comparison-container">
               {[...comparisons].map((c) => (
-                <ComparisonBlock url={c} />
+                <ComparisonBlock
+                  url={c}
+                  statsCallback={(stats: PokemonStats[]) => {
+                    const filterStats = pokeStats.filter(
+                      (s) => s.id !== c.slice(-2, -1)
+                    );
+                    filterStats.push({
+                      id: c.slice(-2, -1),
+                      stats: {
+                        pokemon:
+                          options.find((o) => o.value === c)?.label || "",
+                        stats: extractStats(stats),
+                      },
+                    });
+                    setPokeStats(filterStats);
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -128,7 +155,12 @@ export const Compare: React.FC = () => {
               )}
             </div>
             <div className="target-pokemon-block">
-              {targetPokemon && <TargetPokemonBlock url={targetPokemon} />}
+              {targetPokemon && (
+                <TargetPokemonBlock
+                  url={targetPokemon}
+                  compareStats={[...pokeStats].map((s) => s.stats)}
+                />
+              )}
             </div>
           </div>
         </div>

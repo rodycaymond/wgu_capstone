@@ -2,20 +2,25 @@ import { useEffect, useState } from "react";
 import { getPokemon, getSprite } from "../api/api";
 import "../App.css";
 import { ResponsiveBar } from "@nivo/bar";
-import { bar_data } from "../assets/dummydata";
+import { extractStats, StatsAndPokemonName } from "../assets/helpers";
 
 interface TargetPokemonProps {
   url: string;
+  compareStats: StatsAndPokemonName[];
 }
 
-export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({ url }) => {
+export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
+  url,
+  compareStats,
+}) => {
   const [pokemon, setPokemon] = useState<object>({});
 
   useEffect(() => {
     getPokemon(url).then((data) => {
       setPokemon(data);
     });
-  });
+  }, []);
+
   return (
     <>
       <div className="target-container">
@@ -34,48 +39,22 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({ url }) => {
       </div>
       <div className="graph-block">
         <ResponsiveBar
-          data={bar_data}
-          keys={["hot dog", "burger", "sandwich", "kebab", "fries", "donut"]}
-          indexBy="country"
+          data={[
+            ...compareStats,
+            {
+              pokemon: pokemon["name" as keyof typeof pokemon],
+              stats: extractStats(pokemon["stats" as keyof typeof pokemon]),
+            },
+          ].map((s) => {
+            return { ...s.stats, name: s.pokemon };
+          })}
+          keys={Object.keys(compareStats[0].stats)}
+          indexBy="name"
           margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
           padding={0.3}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={{ scheme: "nivo" }}
-          defs={[
-            {
-              id: "dots",
-              type: "patternDots",
-              background: "inherit",
-              color: "#38bcb2",
-              size: 4,
-              padding: 1,
-              stagger: true,
-            },
-            {
-              id: "lines",
-              type: "patternLines",
-              background: "inherit",
-              color: "#eed312",
-              rotation: -45,
-              lineWidth: 6,
-              spacing: 10,
-            },
-          ]}
-          fill={[
-            {
-              match: {
-                id: "fries",
-              },
-              id: "dots",
-            },
-            {
-              match: {
-                id: "sandwich",
-              },
-              id: "lines",
-            },
-          ]}
+          colors={{ scheme: "red_blue" }}
           borderColor={{
             from: "color",
             modifiers: [["darker", 1.6]],
@@ -86,7 +65,7 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({ url }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "country",
+            legend: "pokemon",
             legendPosition: "middle",
             legendOffset: 32,
             truncateTickAt: 0,
@@ -95,7 +74,7 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({ url }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "food",
+            legend: "stats",
             legendPosition: "middle",
             legendOffset: -40,
             truncateTickAt: 0,
@@ -131,10 +110,6 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({ url }) => {
             },
           ]}
           role="application"
-          ariaLabel="Nivo bar chart demo"
-          barAriaLabel={(e) =>
-            e.id + ": " + e.formattedValue + " in country: " + e.indexValue
-          }
         />
       </div>
     </>
