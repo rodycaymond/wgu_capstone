@@ -1,34 +1,32 @@
-import { useEffect, useState } from "react";
-import { getPokemon, getSprite } from "../api/api";
+import { useState } from "react";
+import { getSprite } from "../api/api";
 import "../App.css";
-import { PokemonStats } from "../assets/helpers";
 import PokemonHoverCard from "./PokemonHoverCard";
 
 interface ComparisonBlockProps {
-  url: string;
-  statsCallback: (stats: PokemonStats[]) => void;
+  pokemon: object;
 }
 
 export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
-  url,
-  statsCallback,
+  pokemon,
 }) => {
-  const [pokemon, setPokemon] = useState<object>({});
-
   const [displayStats, setDisplayStats] = useState<boolean>(false);
 
-  useEffect(() => {
-    getPokemon(url).then((data) => {
-      setPokemon(data);
-      statsCallback(data["stats" as keyof typeof data] as PokemonStats[]);
-    });
-  }, []);
   return (
     <>
-      {displayStats && (
-        <PokemonHoverCard stats={pokemon["stats" as keyof typeof pokemon]} />
-      )}
       <div className="compare-block">
+        {displayStats && (
+          <PokemonHoverCard
+            types={(
+              pokemon["types" as keyof typeof pokemon] as object[]
+            ).reduce<string>((acc: string, curr: object) => {
+              if (acc.length) {
+                return acc + ", " + curr["type" as keyof typeof curr]["name"];
+              }
+              return curr["type" as keyof typeof curr]["name"];
+            }, "")}
+          />
+        )}
         <img
           src={getSprite(pokemon["id" as keyof typeof pokemon])}
           height="150"

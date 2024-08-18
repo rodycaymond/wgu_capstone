@@ -1,11 +1,9 @@
-import { PokemonStats } from "../assets/helpers";
-
 interface PokemonHoverCardProps {
-  stats: PokemonStats[];
+  types: string;
 }
 
 export const PokemonHoverCard: React.FC<PokemonHoverCardProps> = ({
-  stats,
+  types,
 }) => {
   return (
     <div
@@ -17,11 +15,11 @@ export const PokemonHoverCard: React.FC<PokemonHoverCardProps> = ({
         padding: "4px",
         borderRadius: "3px",
         border: "1px solid blue",
+        backgroundColor: "white",
+        top: "30%",
       }}
     >
-      {[...stats].map((s) => (
-        <div>{s.stat.name + " " + s.base_stat}</div>
-      ))}
+      {"Types: " + types}
     </div>
   );
 };

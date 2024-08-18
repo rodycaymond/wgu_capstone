@@ -5,36 +5,28 @@ import { GlobalContext } from "../CapstoneContext";
 import ComparisonBlock from "../components/ComparisonBlock";
 import "../App.css";
 import TargetPokemonBlock from "../components/TargetPokemonBlock";
-import {
-  extractStats,
-  PokemonStats,
-  StatsAndPokemonName,
-} from "../assets/helpers";
+import { extractStats } from "../assets/helpers";
+import { getPokemon } from "../api/api";
+import { predictSuccessOutcome } from "../assets/machine_learning";
 
 type SelectOption = {
   label: string;
   value: string;
 };
 
-type StatMap = {
-  id: string;
-  stats: StatsAndPokemonName;
-};
-
 export const Compare: React.FC = () => {
   const { pokedexData } = useContext(GlobalContext);
   const [options, setOptions] = useState<SelectOption[]>([]);
-  const [comparisons, setComparisons] = useState<string[]>([]);
+  const [comparisons, setComparisons] = useState<object[]>([]);
   const [selectValue, setSelectValue] = useState<SelectOption | undefined>(
     undefined
   );
   const [targetSelectValue, setTargetSelectValue] = useState<
     SelectOption | undefined
   >(undefined);
-  const [targetPokemon, setTargetPokemon] = useState<string | undefined>(
+  const [targetPokemon, setTargetPokemon] = useState<object | undefined>(
     undefined
   );
-  const [pokeStats, setPokeStats] = useState<StatMap[]>([]);
 
   useEffect(() => {
     setOptions(
@@ -47,17 +39,31 @@ export const Compare: React.FC = () => {
     );
   }, [pokedexData]);
 
+  useEffect(() => {
+    if (targetPokemon && comparisons.length > 0) {
+      predictSuccessOutcome(comparisons[0], targetPokemon);
+    }
+  }, [comparisons, targetPokemon]);
+
   const updateComparisons = () => {
     if (selectValue) {
-      setComparisons([...comparisons, selectValue.value]);
-      setSelectValue(undefined);
+      getPokemon(selectValue.value)
+        .then((data) => {
+          setComparisons([...comparisons, data]);
+          setSelectValue(undefined);
+        })
+        .catch(() => alert("unable to get poke-data. Try Refreshing."));
     }
   };
 
   const updateTarget = () => {
     if (targetSelectValue) {
-      setTargetPokemon(targetSelectValue.value);
-      setTargetSelectValue(undefined);
+      getPokemon(targetSelectValue.value)
+        .then((data) => {
+          setTargetPokemon(data);
+          setTargetSelectValue(undefined);
+        })
+        .catch(() => alert("unable to get poke-data. Try Refreshing."));
     }
   };
 
@@ -97,23 +103,7 @@ export const Compare: React.FC = () => {
             </div>
             <div className="comparison-container">
               {[...comparisons].map((c) => (
-                <ComparisonBlock
-                  url={c}
-                  statsCallback={(stats: PokemonStats[]) => {
-                    const filterStats = pokeStats.filter(
-                      (s) => s.id !== c.slice(-2, -1)
-                    );
-                    filterStats.push({
-                      id: c.slice(-2, -1),
-                      stats: {
-                        pokemon:
-                          options.find((o) => o.value === c)?.label || "",
-                        stats: extractStats(stats),
-                      },
-                    });
-                    setPokeStats(filterStats);
-                  }}
-                />
+                <ComparisonBlock pokemon={c} />
               ))}
             </div>
           </div>
@@ -154,14 +144,17 @@ export const Compare: React.FC = () => {
                 </div>
               )}
             </div>
-            <div className="target-pokemon-block">
-              {targetPokemon && (
+            {targetPokemon && (
+              <div className="target-pokemon-block">
                 <TargetPokemonBlock
-                  url={targetPokemon}
-                  compareStats={[...pokeStats].map((s) => s.stats)}
+                  pokemon={targetPokemon}
+                  compareStats={[...comparisons].map((s) => ({
+                    pokemon: s["name" as keyof typeof s],
+                    stats: extractStats(s["stats" as keyof typeof s]),
+                  }))}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
