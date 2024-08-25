@@ -15,24 +15,26 @@ const calculateDamage = (
   attacker: object,
   defender: object
 ): number => {
+  if (moveUsed["damage_class" as keyof typeof moveUsed]["name"] === "status")
+    return 0;
   const calcCrit: number = Math.floor(Math.random() * 2) + 1;
-  console.log("crit: ", calcCrit);
+
   let attack: number = +extractStats(
     attacker["stats" as keyof typeof attacker]
   )[
-    moveUsed["damage_class" as keyof typeof moveUsed] === "physical"
+    moveUsed["damage_class" as keyof typeof moveUsed]["name"] === "physical"
       ? "attack"
       : "special-attack"
   ];
-  console.log("attack: ", attack);
+
   let defense: number = +extractStats(
     defender["stats" as keyof typeof defender]
   )[
-    moveUsed["damage_class" as keyof typeof moveUsed] === "physical"
+    moveUsed["damage_class" as keyof typeof moveUsed]["name"] === "physical"
       ? "defense"
       : "special-defense"
   ];
-  console.log("defense: ", defense);
+
   if (attack > 255 || defense > 255) {
     attack = Math.floor(attack / 4);
     defense = Math.floor(defense / 4);
@@ -42,7 +44,7 @@ const calculateDamage = (
     .includes(moveUsed["type" as keyof typeof moveUsed]["name"])
     ? 1.5
     : 1;
-  console.log("stab: ", stab);
+
   const type1Effectiveness: number =
     TYPE_MATRIX[
       POKE_TYPES[
@@ -57,7 +59,7 @@ const calculateDamage = (
         ] as keyof typeof POKE_TYPES
       ]
     ];
-  console.log("type1: ", type1Effectiveness);
+
   let type2Effectiveness: number = 1;
   if (
     (defender["types" as keyof typeof defender] as Array<object>).length > 1
@@ -77,17 +79,17 @@ const calculateDamage = (
         ]
       ];
   }
-  console.log("type2: ", type2Effectiveness);
+
   const damage =
     ((((2 * POKE_LEVEL * calcCrit) / 5 + 2) *
-      moveUsed["power" as keyof typeof moveUsed] *
+      (moveUsed["power" as keyof typeof moveUsed] || 0) *
       (attack / defense)) /
       50 +
       2) *
     stab *
     type1Effectiveness *
     type2Effectiveness;
-  console.log("first damage calc before 0 check: ", damage);
+
   if (damage <= 0) {
     return damage;
   }
@@ -97,30 +99,118 @@ const calculateDamage = (
 export const predictSuccessOutcome = async (
   selectedPokemon: object,
   targetPokemon: object
-): Promise<number> => {
-  const percentageGreaterMap: { [key: string]: number } = {};
-  const selectStats = extractStats(
-    selectedPokemon["stats" as keyof typeof selectedPokemon]
-  );
-  const targetStats = extractStats(
-    targetPokemon["stats" as keyof typeof targetPokemon]
-  );
+): Promise<number | null> => {
+  // const percentageGreaterMap: { [key: string]: number } = {};
+  // const selectStats = extractStats(
+  //   selectedPokemon["stats" as keyof typeof selectedPokemon]
+  // );
+  // const targetStats = extractStats(
+  //   targetPokemon["stats" as keyof typeof targetPokemon]
+  // );
 
-  Object.keys(selectStats).forEach((s) => {
-    const percentDifference =
-      +selectStats[s as keyof typeof selectStats] /
-      +targetStats[s as keyof typeof targetStats];
-    percentageGreaterMap[s as keyof typeof percentageGreaterMap] =
-      percentDifference;
-  });
-  const moveInfo = await getMove(
-    selectedPokemon["moves" as keyof typeof selectedPokemon][0]["move"]["url"]
-  );
-  console.log(percentageGreaterMap);
-  console.log("Pokemon 1 attacked pokemon 2");
-  console.log(
-    "The damage done is as follows: ",
-    calculateDamage(moveInfo, selectedPokemon, targetPokemon)
-  );
-  return 0;
+  // Object.keys(selectStats).forEach((s) => {
+  //   const percentDifference =
+  //     +selectStats[s as keyof typeof selectStats] /
+  //     +targetStats[s as keyof typeof targetStats];
+  //   percentageGreaterMap[s as keyof typeof percentageGreaterMap] =
+  //     percentDifference;
+  // });
+
+  const attackerMoves = await Promise.all([
+    getMove(
+      selectedPokemon["moves" as keyof typeof selectedPokemon][0]["move"]["url"]
+    ),
+    getMove(
+      selectedPokemon["moves" as keyof typeof selectedPokemon][1]["move"]["url"]
+    ),
+    getMove(
+      selectedPokemon["moves" as keyof typeof selectedPokemon][2]["move"]["url"]
+    ),
+    getMove(
+      selectedPokemon["moves" as keyof typeof selectedPokemon][3]["move"]["url"]
+    ),
+  ]).catch(() => null);
+
+  const defenderMoves = await Promise.all([
+    getMove(
+      targetPokemon["moves" as keyof typeof targetPokemon][0]["move"]["url"]
+    ),
+    getMove(
+      targetPokemon["moves" as keyof typeof targetPokemon][1]["move"]["url"]
+    ),
+    getMove(
+      targetPokemon["moves" as keyof typeof targetPokemon][2]["move"]["url"]
+    ),
+    getMove(
+      targetPokemon["moves" as keyof typeof targetPokemon][3]["move"]["url"]
+    ),
+  ]).catch(() => null);
+
+  if (!attackerMoves || !defenderMoves) return null;
+
+  // Begin simulations //
+  // To start, we will run 100 battle simulations //
+  let wins = 0;
+  for (let i = 0; i < 100; i++) {
+    const attacker = { ...selectedPokemon };
+    const attackerStats = extractStats(
+      attacker["stats" as keyof typeof attacker]
+    );
+    const defender = { ...targetPokemon };
+    const defenderStats = extractStats(
+      defender["stats" as keyof typeof defender]
+    );
+    while (+attackerStats["hp"] > 0 && +defenderStats["hp"] > 0) {
+      if (+attackerStats["speed"] > +defenderStats["speed"]) {
+        defenderStats["hp"] = `${
+          +defenderStats["hp"] -
+          calculateDamage(
+            attackerMoves[Math.floor(Math.random() * attackerMoves.length)],
+            attacker,
+            defender
+          )
+        }`;
+        if (+defenderStats["hp"] <= 0) {
+          wins += 1;
+          break;
+        }
+        attackerStats["hp"] = `${
+          +attackerStats["hp"] -
+          calculateDamage(
+            defenderMoves[Math.floor(Math.random() * defenderMoves.length)],
+            defender,
+            attacker
+          )
+        }`;
+        if (+attackerStats["hp"] <= 0) {
+          break;
+        }
+      } else {
+        attackerStats["hp"] = `${
+          +attackerStats["hp"] -
+          calculateDamage(
+            defenderMoves[Math.floor(Math.random() * defenderMoves.length)],
+            defender,
+            attacker
+          )
+        }`;
+        if (+attackerStats["hp"] <= 0) {
+          break;
+        }
+        defenderStats["hp"] = `${
+          +defenderStats["hp"] -
+          calculateDamage(
+            attackerMoves[Math.floor(Math.random() * attackerMoves.length)],
+            attacker,
+            defender
+          )
+        }`;
+        if (+defenderStats["hp"] <= 0) {
+          wins += 1;
+          break;
+        }
+      }
+    }
+  }
+  return wins;
 };

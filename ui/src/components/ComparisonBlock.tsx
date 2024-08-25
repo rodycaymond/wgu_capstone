@@ -2,13 +2,16 @@ import { useState } from "react";
 import { getSprite } from "../api/api";
 import "../App.css";
 import PokemonHoverCard from "./PokemonHoverCard";
+import { calcBackgroundColor } from "../assets/helpers";
 
 interface ComparisonBlockProps {
   pokemon: object;
+  successRate: number | null;
 }
 
 export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
   pokemon,
+  successRate,
 }) => {
   const [displayStats, setDisplayStats] = useState<boolean>(false);
 
@@ -35,12 +38,24 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
           onMouseOut={() => setDisplayStats(false)}
         />
         <div>{pokemon["name" as keyof typeof pokemon]}</div>
-        <div className="percentage-container">
-          <div className="percentage">
-            <div className="percent" />
+        {successRate && (
+          <div className="percentage-container">
+            <div className="percentage">
+              <div
+                className="percent"
+                style={
+                  successRate
+                    ? {
+                        width: `${successRate}%`,
+                        backgroundColor: calcBackgroundColor(successRate),
+                      }
+                    : {}
+                }
+              />
+            </div>
+            <div>{`${successRate}%`}</div>
           </div>
-          <div>75%</div>
-        </div>
+        )}
       </div>
     </>
   );

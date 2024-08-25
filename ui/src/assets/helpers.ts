@@ -81,3 +81,10 @@ export const TYPE_MATRIX = [
   [1, 0.5, 0.5, 0.5, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0.5, 2],
   [1, 0.5, 1, 1, 1, 1, 2, 0.5, 1, 1, 1, 1, 1, 1, 2, 2, 0.5, 1],
 ];
+
+export const calcBackgroundColor = (rate: number): string => {
+  if (rate < 26) return "red";
+  if (rate < 50) return "orange";
+  if (rate < 75) return "yellow";
+  return "green";
+};

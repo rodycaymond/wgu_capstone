@@ -160,9 +160,10 @@
 }
 
 .percent {
-  width: 75%;
+  width: 100%;
   height: 100%;
-  background-color: rgb(223, 186, 0);
+  background-color: transparent;
+  transition: 0.5s ease-out;
 }
 
 .add-container {

@@ -41,15 +41,28 @@ export const Compare: React.FC = () => {
 
   useEffect(() => {
     if (targetPokemon && comparisons.length > 0) {
-      predictSuccessOutcome(comparisons[0], targetPokemon);
+      comparisons.forEach((c, i) => {
+        predictSuccessOutcome(c["pokemon" as keyof typeof c], targetPokemon)
+          .then((data) => {
+            const copyComparisons = [...comparisons];
+            copyComparisons[i] = { ...c, success: data };
+            setComparisons(copyComparisons);
+          })
+          .catch(() =>
+            alert(
+              "unable to determine success chance for " +
+                c["pokemon" as keyof typeof c]["name"]
+            )
+          );
+      });
     }
-  }, [comparisons, targetPokemon]);
+  }, [comparisons.length, targetPokemon]);
 
   const updateComparisons = () => {
     if (selectValue) {
       getPokemon(selectValue.value)
         .then((data) => {
-          setComparisons([...comparisons, data]);
+          setComparisons([...comparisons, { pokemon: data, success: null }]);
           setSelectValue(undefined);
         })
         .catch(() => alert("unable to get poke-data. Try Refreshing."));
@@ -103,7 +116,10 @@ export const Compare: React.FC = () => {
             </div>
             <div className="comparison-container">
               {[...comparisons].map((c) => (
-                <ComparisonBlock pokemon={c} />
+                <ComparisonBlock
+                  pokemon={c["pokemon" as keyof typeof c]}
+                  successRate={c["success" as keyof typeof c]}
+                />
               ))}
             </div>
           </div>
@@ -149,8 +165,10 @@ export const Compare: React.FC = () => {
                 <TargetPokemonBlock
                   pokemon={targetPokemon}
                   compareStats={[...comparisons].map((s) => ({
-                    pokemon: s["name" as keyof typeof s],
-                    stats: extractStats(s["stats" as keyof typeof s]),
+                    pokemon: s["pokemon" as keyof typeof s]["name"],
+                    stats: extractStats(
+                      s["pokemon" as keyof typeof s]["stats"]
+                    ),
                   }))}
                 />
               </div>
