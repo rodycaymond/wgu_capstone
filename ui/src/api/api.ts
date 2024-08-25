@@ -13,3 +13,8 @@ export const getPokemon = async (url: string): Promise<object> => {
   const response = await axios.get(url.replace("-species", ""));
   return response.data;
 };
+
+export const getMove = async (url: string): Promise<object> => {
+  const response = await axios.get(url);
+  return response.data;
+};
