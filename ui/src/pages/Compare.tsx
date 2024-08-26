@@ -55,8 +55,10 @@ export const Compare: React.FC = () => {
             )
           );
       });
+    } else {
+      setComparisons((prev) => prev.map((c) => ({ ...c, success: null })));
     }
-  }, [comparisons.length, targetPokemon]);
+  }, [JSON.stringify(comparisons), JSON.stringify(targetPokemon)]);
 
   const updateComparisons = () => {
     if (selectValue) {

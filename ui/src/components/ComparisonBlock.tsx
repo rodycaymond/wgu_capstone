@@ -38,24 +38,22 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
           onMouseOut={() => setDisplayStats(false)}
         />
         <div>{pokemon["name" as keyof typeof pokemon]}</div>
-        {successRate && (
-          <div className="percentage-container">
-            <div className="percentage">
-              <div
-                className="percent"
-                style={
-                  successRate
-                    ? {
-                        width: `${successRate}%`,
-                        backgroundColor: calcBackgroundColor(successRate),
-                      }
-                    : {}
-                }
-              />
-            </div>
-            <div>{`${successRate}%`}</div>
+        <div className="percentage-container">
+          <div className="percentage">
+            <div
+              className="percent"
+              style={
+                successRate
+                  ? {
+                      width: `${successRate || 100}%`,
+                      backgroundColor: calcBackgroundColor(successRate),
+                    }
+                  : {}
+              }
+            />
           </div>
-        )}
+          <div>{`${successRate || 0}%`}</div>
+        </div>
       </div>
     </>
   );
