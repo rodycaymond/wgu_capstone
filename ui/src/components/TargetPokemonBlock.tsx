@@ -28,8 +28,14 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
         </div>
         <div className="description-container">
           <div>{pokemon["name" as keyof typeof pokemon]}</div>
-          <div>Height: {pokemon["height" as keyof typeof pokemon]}</div>
+          <div>
+            Types:{" "}
+            {(pokemon["types" as keyof typeof pokemon] as Array<object>)
+              .map((t) => t["type" as keyof typeof t]["name"])
+              .join(", ")}
+          </div>
           <div>Weight: {pokemon["weight" as keyof typeof pokemon]}</div>
+          <div>Height: {pokemon["height" as keyof typeof pokemon]}</div>
         </div>
       </div>
       {compareStats.length ? (

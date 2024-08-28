@@ -100,49 +100,73 @@ export const predictSuccessOutcome = async (
   selectedPokemon: object,
   targetPokemon: object
 ): Promise<number | null> => {
-  // const percentageGreaterMap: { [key: string]: number } = {};
-  // const selectStats = extractStats(
-  //   selectedPokemon["stats" as keyof typeof selectedPokemon]
-  // );
-  // const targetStats = extractStats(
-  //   targetPokemon["stats" as keyof typeof targetPokemon]
-  // );
-
-  // Object.keys(selectStats).forEach((s) => {
-  //   const percentDifference =
-  //     +selectStats[s as keyof typeof selectStats] /
-  //     +targetStats[s as keyof typeof targetStats];
-  //   percentageGreaterMap[s as keyof typeof percentageGreaterMap] =
-  //     percentDifference;
-  // });
-
+  const aMoves = new Array(4)
+    .fill(0)
+    .map(() =>
+      Math.floor(
+        Math.random() *
+          (
+            selectedPokemon[
+              "moves" as keyof typeof selectedPokemon
+            ] as Array<object>
+          ).length
+      )
+    );
   const attackerMoves = await Promise.all([
     getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][0]["move"]["url"]
+      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[0]][
+        "move"
+      ]["url"]
     ),
     getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][1]["move"]["url"]
+      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[1]][
+        "move"
+      ]["url"]
     ),
     getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][2]["move"]["url"]
+      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[2]][
+        "move"
+      ]["url"]
     ),
     getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][3]["move"]["url"]
+      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[3]][
+        "move"
+      ]["url"]
     ),
   ]).catch(() => null);
 
+  const dMoves = new Array(4)
+    .fill(0)
+    .map(() =>
+      Math.floor(
+        Math.random() *
+          (
+            targetPokemon[
+              "moves" as keyof typeof targetPokemon
+            ] as Array<object>
+          ).length
+      )
+    );
   const defenderMoves = await Promise.all([
     getMove(
-      targetPokemon["moves" as keyof typeof targetPokemon][0]["move"]["url"]
+      targetPokemon["moves" as keyof typeof targetPokemon][dMoves[0]]["move"][
+        "url"
+      ]
     ),
     getMove(
-      targetPokemon["moves" as keyof typeof targetPokemon][1]["move"]["url"]
+      targetPokemon["moves" as keyof typeof targetPokemon][dMoves[1]]["move"][
+        "url"
+      ]
     ),
     getMove(
-      targetPokemon["moves" as keyof typeof targetPokemon][2]["move"]["url"]
+      targetPokemon["moves" as keyof typeof targetPokemon][dMoves[2]]["move"][
+        "url"
+      ]
     ),
     getMove(
-      targetPokemon["moves" as keyof typeof targetPokemon][3]["move"]["url"]
+      targetPokemon["moves" as keyof typeof targetPokemon][dMoves[3]]["move"][
+        "url"
+      ]
     ),
   ]).catch(() => null);
 

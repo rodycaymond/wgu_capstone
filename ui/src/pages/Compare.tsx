@@ -42,6 +42,9 @@ export const Compare: React.FC = () => {
   useEffect(() => {
     if (targetPokemon && comparisons.length > 0) {
       comparisons.forEach((c, i) => {
+        if (c["success" as keyof typeof c] !== null) {
+          return;
+        }
         predictSuccessOutcome(c["pokemon" as keyof typeof c], targetPokemon)
           .then((data) => {
             const copyComparisons = [...comparisons];
@@ -58,7 +61,10 @@ export const Compare: React.FC = () => {
     } else {
       setComparisons((prev) => prev.map((c) => ({ ...c, success: null })));
     }
-  }, [JSON.stringify(comparisons), JSON.stringify(targetPokemon)]);
+  }, [
+    JSON.stringify(comparisons.map((c) => c["pokemon" as keyof typeof c])),
+    JSON.stringify(targetPokemon),
+  ]);
 
   const updateComparisons = () => {
     if (selectValue) {
