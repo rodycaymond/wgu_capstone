@@ -32,6 +32,7 @@
 .page-container {
   width: 95%;
   margin-left: 5%;
+  overflow-y: auto;
 }
 
 .menu-icon {
@@ -94,10 +95,11 @@
   align-items: center;
   width: 50%;
   margin: auto;
+  overflow-y: "auto";
 }
 
 .welcome-page div {
-  margin: 36px 0;
+  margin: 16px 0;
 }
 
 .welcome-title {
