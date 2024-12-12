@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getMove } from "../api/api";
 import { SelectOption } from "../pages/Compare";
 import { extractStats, POKE_TYPES, TYPE_MATRIX } from "./helpers";
@@ -134,6 +135,72 @@ export const prepareDefenderMoves = async (targetPokemon: object) => {
   ]);
 };
 
+const mostAccurate = (moves: object[]): object => {
+  let accuracy: { [key: string]: any } = { accuracy: 0 };
+  moves.forEach((move) => {
+    if (move["accuracy" as keyof typeof move] >= accuracy["accuracy"]) {
+      accuracy = move;
+    }
+  });
+  return accuracy;
+};
+
+const mostPowerful = (moves: object[]): object => {
+  let power: { [key: string]: any } = { power: 0 };
+  moves.forEach((move) => {
+    if (move["power" as keyof typeof move] >= power["power"]) {
+      power = move;
+    }
+  });
+  return power;
+};
+
+const decisionTree = (
+  selectedMoves: object[],
+  targetPokemon: object,
+  defending: boolean
+): object => {
+  // First Decision, do I have a type advantage?
+  if (
+    selectedMoves.some(
+      (move) =>
+        TYPE_MATRIX[
+          POKE_TYPES[
+            move["type" as keyof typeof move]["name"] as keyof typeof POKE_TYPES
+          ]
+        ][
+          POKE_TYPES[
+            targetPokemon["types" as keyof typeof targetPokemon][0][
+              "name"
+            ] as keyof typeof POKE_TYPES
+          ]
+        ] === 2
+    )
+  ) {
+    const typeAdvantageMoves = selectedMoves.filter(
+      (move) =>
+        move["type" as keyof typeof move] ===
+        targetPokemon["types" as keyof typeof targetPokemon][0]["name"]
+    );
+    // Second Decision, am I defending? Use the most accurate attack
+    if (defending) {
+      return mostAccurate(typeAdvantageMoves);
+      // Else, use the most powerful attack
+    } else {
+      return mostPowerful(typeAdvantageMoves);
+    }
+    // No type advantage, branch
+  } else {
+    // Second decision, am I defending? Use the most accurate attack
+    if (defending) {
+      return mostAccurate(selectedMoves);
+      // Not defending, use most powerful move
+    } else {
+      return mostPowerful(selectedMoves);
+    }
+  }
+};
+
 export const predictSuccessOutcome = async (
   selectedPokemon: object,
   selectedMoves: SelectOption[],
@@ -147,7 +214,8 @@ export const predictSuccessOutcome = async (
 
   const defenderMoves = [...targetPokemonMoves];
 
-  if (!attackerMoves || !defenderMoves) return null;
+  if (!attackerMoves || !defenderMoves)
+    throw new Error("unable to determine move sets");
 
   // Begin simulations //
   // To start, we will run 100 battle simulations //
@@ -166,7 +234,7 @@ export const predictSuccessOutcome = async (
         defenderStats["hp"] = `${
           +defenderStats["hp"] -
           calculateDamage(
-            attackerMoves[Math.floor(Math.random() * attackerMoves.length)],
+            decisionTree(attackerMoves, defender, false),
             attacker,
             defender
           )
@@ -201,7 +269,7 @@ export const predictSuccessOutcome = async (
         defenderStats["hp"] = `${
           +defenderStats["hp"] -
           calculateDamage(
-            attackerMoves[Math.floor(Math.random() * attackerMoves.length)],
+            decisionTree(attackerMoves, defender, false),
             attacker,
             defender
           )

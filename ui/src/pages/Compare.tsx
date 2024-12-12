@@ -52,9 +52,6 @@ export const Compare: React.FC = () => {
       targetPokemonMoves.length > 0
     ) {
       comparisons.forEach((c, i) => {
-        if (c["success" as keyof typeof c] !== null) {
-          return;
-        }
         predictSuccessOutcome(
           c["pokemon" as keyof typeof c],
           selectedMoves,
@@ -66,12 +63,13 @@ export const Compare: React.FC = () => {
             copyComparisons[i] = { ...c, success: data };
             setComparisons(copyComparisons);
           })
-          .catch(() =>
+          .catch((e) => {
+            console.log("Error: ", e);
             alert(
               "unable to determine success chance for " +
                 c["pokemon" as keyof typeof c]["name"]
-            )
-          );
+            );
+          });
       });
     } else {
       setComparisons((prev) => prev.map((c) => ({ ...c, success: null })));
