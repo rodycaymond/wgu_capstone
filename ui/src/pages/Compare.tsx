@@ -7,9 +7,12 @@ import "../App.css";
 import TargetPokemonBlock from "../components/TargetPokemonBlock";
 import { extractStats } from "../assets/helpers";
 import { getPokemon } from "../api/api";
-import { predictSuccessOutcome } from "../assets/machine_learning";
+import {
+  predictSuccessOutcome,
+  prepareDefenderMoves,
+} from "../assets/machine_learning";
 
-type SelectOption = {
+export type SelectOption = {
   label: string;
   value: string;
 };
@@ -27,6 +30,8 @@ export const Compare: React.FC = () => {
   const [targetPokemon, setTargetPokemon] = useState<object | undefined>(
     undefined
   );
+  const [selectedMoves, setSelectedMoves] = useState<SelectOption[]>([]);
+  const [targetPokemonMoves, setTargetPokemonMoves] = useState<object[]>([]);
 
   useEffect(() => {
     setOptions(
@@ -40,12 +45,22 @@ export const Compare: React.FC = () => {
   }, [pokedexData]);
 
   useEffect(() => {
-    if (targetPokemon && comparisons.length > 0) {
+    if (
+      targetPokemon &&
+      comparisons.length > 0 &&
+      selectedMoves.length > 0 &&
+      targetPokemonMoves.length > 0
+    ) {
       comparisons.forEach((c, i) => {
         if (c["success" as keyof typeof c] !== null) {
           return;
         }
-        predictSuccessOutcome(c["pokemon" as keyof typeof c], targetPokemon)
+        predictSuccessOutcome(
+          c["pokemon" as keyof typeof c],
+          selectedMoves,
+          targetPokemon,
+          targetPokemonMoves
+        )
           .then((data) => {
             const copyComparisons = [...comparisons];
             copyComparisons[i] = { ...c, success: data };
@@ -64,6 +79,7 @@ export const Compare: React.FC = () => {
   }, [
     JSON.stringify(comparisons.map((c) => c["pokemon" as keyof typeof c])),
     JSON.stringify(targetPokemon),
+    JSON.stringify(selectedMoves),
   ]);
 
   const updateComparisons = () => {
@@ -80,7 +96,9 @@ export const Compare: React.FC = () => {
   const updateTarget = () => {
     if (targetSelectValue) {
       getPokemon(targetSelectValue.value)
-        .then((data) => {
+        .then(async (data) => {
+          const moves = await prepareDefenderMoves(data);
+          setTargetPokemonMoves(moves);
           setTargetPokemon(data);
           setTargetSelectValue(undefined);
         })
@@ -95,12 +113,15 @@ export const Compare: React.FC = () => {
           <div className="left-content">
             <div className="compare-left-title">Chance of Success</div>
             <div className="add-container">
-              <div className="add-button" onClick={updateComparisons}>
-                Add +
-              </div>
+              {comparisons.length === 0 && (
+                <div className="add-button" onClick={updateComparisons}>
+                  Add +
+                </div>
+              )}
               <div
                 className="reset-button"
                 onClick={() => {
+                  setSelectedMoves([]);
                   setComparisons([]);
                   setSelectValue(undefined);
                 }}
@@ -123,10 +144,13 @@ export const Compare: React.FC = () => {
               </div>
             </div>
             <div className="comparison-container">
-              {[...comparisons].map((c) => (
+              {[...comparisons].map((c, i) => (
                 <ComparisonBlock
+                  key={i}
                   pokemon={c["pokemon" as keyof typeof c]}
                   successRate={c["success" as keyof typeof c]}
+                  selectedMoves={selectedMoves}
+                  setSelectedMoves={setSelectedMoves}
                 />
               ))}
             </div>
@@ -145,6 +169,7 @@ export const Compare: React.FC = () => {
               <div
                 className="reset-button"
                 onClick={() => {
+                  setTargetPokemonMoves([]);
                   setTargetPokemon(undefined);
                   setTargetSelectValue(undefined);
                 }}

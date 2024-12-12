@@ -1,4 +1,5 @@
 import { getMove } from "../api/api";
+import { SelectOption } from "../pages/Compare";
 import { extractStats, POKE_TYPES, TYPE_MATRIX } from "./helpers";
 
 const POKE_LEVEL = 1 as const;
@@ -96,45 +97,7 @@ const calculateDamage = (
   return Math.floor(damage * ((Math.floor(Math.random() * 39) + 217) / 255));
 };
 
-export const predictSuccessOutcome = async (
-  selectedPokemon: object,
-  targetPokemon: object
-): Promise<number | null> => {
-  const aMoves = new Array(4)
-    .fill(0)
-    .map(() =>
-      Math.floor(
-        Math.random() *
-          (
-            selectedPokemon[
-              "moves" as keyof typeof selectedPokemon
-            ] as Array<object>
-          ).length
-      )
-    );
-  const attackerMoves = await Promise.all([
-    getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[0]][
-        "move"
-      ]["url"]
-    ),
-    getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[1]][
-        "move"
-      ]["url"]
-    ),
-    getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[2]][
-        "move"
-      ]["url"]
-    ),
-    getMove(
-      selectedPokemon["moves" as keyof typeof selectedPokemon][aMoves[3]][
-        "move"
-      ]["url"]
-    ),
-  ]).catch(() => null);
-
+export const prepareDefenderMoves = async (targetPokemon: object) => {
   const dMoves = new Array(4)
     .fill(0)
     .map(() =>
@@ -147,7 +110,7 @@ export const predictSuccessOutcome = async (
           ).length
       )
     );
-  const defenderMoves = await Promise.all([
+  return await Promise.all([
     getMove(
       targetPokemon["moves" as keyof typeof targetPokemon][dMoves[0]]["move"][
         "url"
@@ -168,7 +131,21 @@ export const predictSuccessOutcome = async (
         "url"
       ]
     ),
-  ]).catch(() => null);
+  ]);
+};
+
+export const predictSuccessOutcome = async (
+  selectedPokemon: object,
+  selectedMoves: SelectOption[],
+  targetPokemon: object,
+  targetPokemonMoves: object[]
+): Promise<number | null> => {
+  const aMoves = [...selectedMoves].map((m) => m.value);
+  const attackerMoves = await Promise.all(aMoves.map((m) => getMove(m))).catch(
+    () => null
+  );
+
+  const defenderMoves = [...targetPokemonMoves];
 
   if (!attackerMoves || !defenderMoves) return null;
 

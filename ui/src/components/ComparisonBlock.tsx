@@ -1,19 +1,28 @@
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { getSprite } from "../api/api";
 import "../App.css";
 import PokemonHoverCard from "./PokemonHoverCard";
 import { calcBackgroundColor } from "../assets/helpers";
+import { SelectOption } from "../pages/Compare";
+import Select from "react-select";
 
 interface ComparisonBlockProps {
   pokemon: object;
   successRate: number | null;
+  selectedMoves: SelectOption[];
+  setSelectedMoves: React.Dispatch<SetStateAction<SelectOption[]>>;
 }
 
 export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
   pokemon,
   successRate,
+  selectedMoves,
+  setSelectedMoves,
 }) => {
   const [displayStats, setDisplayStats] = useState<boolean>(false);
+  const [selectValue, setSelectValue] = useState<SelectOption | undefined>(
+    undefined
+  );
 
   return (
     <>
@@ -54,6 +63,55 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
           </div>
           <div>{`${successRate || 0}%`}</div>
         </div>
+      </div>
+      <div className="move-list">
+        <div className="compare-left-title">Move Selection</div>
+        <div className="add-container">
+          {selectedMoves.length < 4 && (
+            <div
+              className="add-button"
+              onClick={() => {
+                if (!selectValue || selectedMoves.length === 4) return;
+                setSelectedMoves((prev) => [...prev, selectValue]);
+              }}
+            >
+              Add +
+            </div>
+          )}
+          <div
+            className="reset-button"
+            onClick={() => {
+              setSelectedMoves([]);
+              setSelectValue(undefined);
+            }}
+          >
+            Reset
+          </div>
+          <div className="search-container">
+            <Select
+              options={(
+                pokemon["moves" as keyof typeof pokemon] as object[]
+              ).map((m) => ({
+                label: m["move" as keyof typeof m]["name" as keyof typeof m],
+                value: m["move" as keyof typeof m]["url" as keyof typeof m],
+              }))}
+              value={selectValue}
+              onChange={(o) => (o ? setSelectValue(o) : null)}
+              styles={{
+                container: (styles) => ({ ...styles, cursor: "pointer" }),
+                valueContainer: (styles) => ({
+                  ...styles,
+                  cursor: "pointer",
+                }),
+              }}
+            />
+          </div>
+        </div>
+        {selectedMoves.map((m, i) => (
+          <div key={i} className="move-block">
+            Move {i + 1}: {m.label}
+          </div>
+        ))}
       </div>
     </>
   );
