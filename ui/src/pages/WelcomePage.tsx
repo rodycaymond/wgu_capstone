@@ -7,14 +7,14 @@ export const WelcomePage: React.FC = () => {
       <div className="welcome-page">
         <div className="welcome-title">Pokemon Battle Predictor</div>
         <div>
-          The Pokemon comparator will pit the Pokemon of your choice against
-          each other to determine which might have a higher success rate in
-          battle. The prediction calculated is generated from an AI Model which
-          executes a decision tree to determine which moves to use in battle.
-          You, as the Pokemon trainer, are given the opportunity to select a
-          Pokemon and its move set to see how different permutations of actions
-          might affect the outcome of the battle. Target Pokemon moves are
-          chosen at random, once, after you have selected the Pokemon. It is
+          The Pokemon Battle Predictor will pit the Pokemon of your choice
+          against each other to determine which might have a higher success rate
+          in battle. The prediction calculated is generated from an AI Model
+          which executes a decision tree to determine which moves to use in
+          battle. You, as the Pokemon trainer, are given the opportunity to
+          select a Pokemon and its move set to see how different permutations of
+          actions might affect the outcome of the battle. Target Pokemon moves
+          are chosen at random, once, after you have selected the Pokemon. It is
           possible that the move set randomly selected might have moves that do
           no damage. If you think you selected a no-damage target Pokemon,
           simply reset the Pokemon for a different move set.

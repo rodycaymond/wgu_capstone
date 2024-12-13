@@ -32,6 +32,7 @@ export const Compare: React.FC = () => {
   );
   const [selectedMoves, setSelectedMoves] = useState<SelectOption[]>([]);
   const [targetPokemonMoves, setTargetPokemonMoves] = useState<object[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setOptions(
@@ -51,6 +52,7 @@ export const Compare: React.FC = () => {
       selectedMoves.length > 0 &&
       targetPokemonMoves.length > 0
     ) {
+      setLoading(true);
       comparisons.forEach((c, i) => {
         predictSuccessOutcome(
           c["pokemon" as keyof typeof c],
@@ -69,7 +71,8 @@ export const Compare: React.FC = () => {
               "unable to determine success chance for " +
                 c["pokemon" as keyof typeof c]["name"]
             );
-          });
+          })
+          .finally(() => setLoading(false));
       });
     } else {
       setComparisons((prev) => prev.map((c) => ({ ...c, success: null })));
@@ -109,7 +112,10 @@ export const Compare: React.FC = () => {
       <div className="compare-page">
         <div className="compare-page-content-section">
           <div className="left-content">
-            <div className="compare-left-title">Chance of Success</div>
+            <div className="compare-left-title">
+              {loading ? "Calculating..." : "Chance of Success"}
+            </div>
+
             <div className="add-container">
               {comparisons.length === 0 && (
                 <div className="add-button" onClick={updateComparisons}>
@@ -201,6 +207,7 @@ export const Compare: React.FC = () => {
                       s["pokemon" as keyof typeof s]["stats"]
                     ),
                   }))}
+                  selectedMoves={targetPokemonMoves}
                 />
               </div>
             )}

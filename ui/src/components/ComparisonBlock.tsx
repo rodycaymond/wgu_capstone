@@ -46,7 +46,12 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
           onMouseOver={() => setDisplayStats(true)}
           onMouseOut={() => setDisplayStats(false)}
         />
-        <div>{pokemon["name" as keyof typeof pokemon]}</div>
+        <div>
+          {(
+            pokemon["name" as keyof typeof pokemon][0] as string
+          ).toUpperCase() +
+            (pokemon["name" as keyof typeof pokemon] as string).substring(1)}
+        </div>
         <div className="percentage-container">
           <div className="percentage">
             <div

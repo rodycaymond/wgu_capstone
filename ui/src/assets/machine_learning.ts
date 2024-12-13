@@ -2,6 +2,7 @@
 import { getMove } from "../api/api";
 import { SelectOption } from "../pages/Compare";
 import { extractStats, POKE_TYPES, TYPE_MATRIX } from "./helpers";
+import SPLASH from "./splash";
 
 const POKE_LEVEL = 1 as const;
 
@@ -136,9 +137,13 @@ export const prepareDefenderMoves = async (targetPokemon: object) => {
 };
 
 const mostAccurate = (moves: object[]): object => {
-  let accuracy: { [key: string]: any } = { accuracy: 0 };
+  let accuracy: object = moves[0];
   moves.forEach((move) => {
-    if (move["accuracy" as keyof typeof move] >= accuracy["accuracy"]) {
+    if (
+      move["accuracy" as keyof typeof move] !== null &&
+      move["accuracy" as keyof typeof move] >=
+        accuracy["accuracy" as keyof typeof accuracy]
+    ) {
       accuracy = move;
     }
   });
@@ -146,13 +151,27 @@ const mostAccurate = (moves: object[]): object => {
 };
 
 const mostPowerful = (moves: object[]): object => {
-  let power: { [key: string]: any } = { power: 0 };
+  let power: object = moves[0];
   moves.forEach((move) => {
-    if (move["power" as keyof typeof move] >= power["power"]) {
+    if (
+      move["power" as keyof typeof move] !== null &&
+      move["power" as keyof typeof move] >= power["power" as keyof typeof power]
+    ) {
       power = move;
     }
   });
   return power;
+};
+
+const reducePp = (move: object, set: object[]): object[] => {
+  return set.map((m) => {
+    if (m["name" as keyof typeof m] === move["name" as keyof typeof move]) {
+      if ((m["pp" as keyof typeof m] as number) > 0) {
+        (m["pp" as keyof typeof m] as number) -= 1;
+      }
+    }
+    return m;
+  });
 };
 
 const decisionTree = (
@@ -160,9 +179,18 @@ const decisionTree = (
   targetPokemon: object,
   defending: boolean
 ): object => {
-  // First Decision, do I have a type advantage?
+  // Do any moves not have PP remaining?
+  let finalViableMoveSet = [...selectedMoves].filter(
+    (m) => +m["pp" as keyof typeof m] > 0
+  );
+
+  if (!finalViableMoveSet.length) {
+    // Return a move that does no damage (Splash in the original Pokemon games has no effects at all)
+    return SPLASH;
+  }
+  // Is there a type advantage on any move?
   if (
-    selectedMoves.some(
+    finalViableMoveSet.some(
       (move) =>
         TYPE_MATRIX[
           POKE_TYPES[
@@ -177,28 +205,18 @@ const decisionTree = (
         ] === 2
     )
   ) {
-    const typeAdvantageMoves = selectedMoves.filter(
+    finalViableMoveSet = finalViableMoveSet.filter(
       (move) =>
         move["type" as keyof typeof move] ===
         targetPokemon["types" as keyof typeof targetPokemon][0]["name"]
     );
-    // Second Decision, am I defending? Use the most accurate attack
-    if (defending) {
-      return mostAccurate(typeAdvantageMoves);
-      // Else, use the most powerful attack
-    } else {
-      return mostPowerful(typeAdvantageMoves);
-    }
-    // No type advantage, branch
-  } else {
-    // Second decision, am I defending? Use the most accurate attack
-    if (defending) {
-      return mostAccurate(selectedMoves);
-      // Not defending, use most powerful move
-    } else {
-      return mostPowerful(selectedMoves);
-    }
   }
+  // Am I defending? Use a more accurate move
+  if (defending) {
+    return mostAccurate(finalViableMoveSet);
+  }
+
+  return mostPowerful(finalViableMoveSet);
 };
 
 export const predictSuccessOutcome = async (
@@ -206,7 +224,7 @@ export const predictSuccessOutcome = async (
   selectedMoves: SelectOption[],
   targetPokemon: object,
   targetPokemonMoves: object[]
-): Promise<number | null> => {
+): Promise<number> => {
   const aMoves = [...selectedMoves].map((m) => m.value);
   const attackerMoves = await Promise.all(aMoves.map((m) => getMove(m))).catch(
     () => null
@@ -221,6 +239,8 @@ export const predictSuccessOutcome = async (
   // To start, we will run 100 battle simulations //
   let wins = 0;
   for (let i = 0; i < 100; i++) {
+    let am = attackerMoves.slice();
+    let dm = defenderMoves.slice();
     const attacker = { ...selectedPokemon };
     const attackerStats = extractStats(
       attacker["stats" as keyof typeof attacker]
@@ -229,50 +249,43 @@ export const predictSuccessOutcome = async (
     const defenderStats = extractStats(
       defender["stats" as keyof typeof defender]
     );
+    let moveCount = 0;
     while (+attackerStats["hp"] > 0 && +defenderStats["hp"] > 0) {
+      if (moveCount > 99) break;
+      moveCount++;
+      // Attacker is faster, attacker attacks first
       if (+attackerStats["speed"] > +defenderStats["speed"]) {
+        const attack = decisionTree(am, defender, false);
+        // am = reducePp(attack, am);
         defenderStats["hp"] = `${
-          +defenderStats["hp"] -
-          calculateDamage(
-            decisionTree(attackerMoves, defender, false),
-            attacker,
-            defender
-          )
+          +defenderStats["hp"] - calculateDamage(attack, attacker, defender)
         }`;
         if (+defenderStats["hp"] <= 0) {
           wins += 1;
           break;
         }
+        const defense = decisionTree(dm, attacker, true);
+        // dm = reducePp(defense, dm);
         attackerStats["hp"] = `${
-          +attackerStats["hp"] -
-          calculateDamage(
-            defenderMoves[Math.floor(Math.random() * defenderMoves.length)],
-            defender,
-            attacker
-          )
+          +attackerStats["hp"] - calculateDamage(defense, defender, attacker)
         }`;
         if (+attackerStats["hp"] <= 0) {
           break;
         }
       } else {
+        // Defender is faster, defender attacks first
+        const defense = decisionTree(dm, attacker, false);
+        // dm = reducePp(defense, dm);
         attackerStats["hp"] = `${
-          +attackerStats["hp"] -
-          calculateDamage(
-            defenderMoves[Math.floor(Math.random() * defenderMoves.length)],
-            defender,
-            attacker
-          )
+          +attackerStats["hp"] - calculateDamage(defense, defender, attacker)
         }`;
         if (+attackerStats["hp"] <= 0) {
           break;
         }
+        const attack = decisionTree(am, defender, true);
+        // am = reducePp(attack, am);
         defenderStats["hp"] = `${
-          +defenderStats["hp"] -
-          calculateDamage(
-            decisionTree(attackerMoves, defender, false),
-            attacker,
-            defender
-          )
+          +defenderStats["hp"] - calculateDamage(attack, attacker, defender)
         }`;
         if (+defenderStats["hp"] <= 0) {
           wins += 1;
@@ -280,6 +293,8 @@ export const predictSuccessOutcome = async (
         }
       }
     }
+    // am = attackerMoves.slice();
+    // dm = defenderMoves.slice();
   }
   return wins;
 };

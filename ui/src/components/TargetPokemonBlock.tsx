@@ -6,11 +6,13 @@ import { getSprite } from "../api/api";
 interface TargetPokemonProps {
   pokemon: object;
   compareStats: StatsAndPokemonName[];
+  selectedMoves: object[];
 }
 
 export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
   pokemon,
   compareStats,
+  selectedMoves,
 }) => {
   if (!pokemon) {
     return <></>;
@@ -27,15 +29,23 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
           />
         </div>
         <div className="description-container">
-          <div>{pokemon["name" as keyof typeof pokemon]}</div>
+          <div style={{ textDecoration: "underline" }}>
+            {(
+              pokemon["name" as keyof typeof pokemon][0] as string
+            ).toUpperCase() +
+              (pokemon["name" as keyof typeof pokemon] as string).substring(1)}
+          </div>
           <div>
             Types:{" "}
             {(pokemon["types" as keyof typeof pokemon] as Array<object>)
               .map((t) => t["type" as keyof typeof t]["name"])
               .join(", ")}
           </div>
-          <div>Weight: {pokemon["weight" as keyof typeof pokemon]}</div>
-          <div>Height: {pokemon["height" as keyof typeof pokemon]}</div>
+          {[...selectedMoves].map((m, i) => (
+            <div key={i + 1} style={{ fontSize: "18px" }}>
+              Move {i + 1}: {m["name" as keyof typeof m]}
+            </div>
+          ))}
         </div>
       </div>
       {compareStats.length ? (
