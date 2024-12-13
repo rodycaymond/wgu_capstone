@@ -44,8 +44,10 @@ export const WelcomePage: React.FC = () => {
         <br />
         <div>
           Finally, battle data is derived from the “I attack you” point of view.
-          Success rates are determined by comparing both the “I attack you”
-          points of view of the matchup in addition to statistic comparison.{" "}
+          Success is determined by each Pokemon utilizing the Decision Tree
+          algorithm to choose the best possible move on each turn. A Pokemon
+          which has the highest speed stats will usually attack first,
+          regardless.
         </div>
       </div>
     </PageContainer>
