@@ -33,6 +33,7 @@ export const Compare: React.FC = () => {
   const [selectedMoves, setSelectedMoves] = useState<SelectOption[]>([]);
   const [targetPokemonMoves, setTargetPokemonMoves] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [suggestedMoveSet, setSuggestMoveSet] = useState<string[]>([]);
 
   useEffect(() => {
     setOptions(
@@ -58,7 +59,8 @@ export const Compare: React.FC = () => {
           c["pokemon" as keyof typeof c],
           selectedMoves,
           targetPokemon,
-          targetPokemonMoves
+          targetPokemonMoves,
+          setSuggestMoveSet
         )
           .then((data) => {
             const copyComparisons = [...comparisons];
@@ -76,6 +78,7 @@ export const Compare: React.FC = () => {
       });
     } else {
       setComparisons((prev) => prev.map((c) => ({ ...c, success: null })));
+      setSuggestMoveSet([]);
     }
   }, [
     JSON.stringify(comparisons.map((c) => c["pokemon" as keyof typeof c])),
@@ -155,6 +158,7 @@ export const Compare: React.FC = () => {
                   successRate={c["success" as keyof typeof c]}
                   selectedMoves={selectedMoves}
                   setSelectedMoves={setSelectedMoves}
+                  suggestedMoves={suggestedMoveSet}
                 />
               ))}
             </div>

@@ -7,7 +7,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <Router basename="wgu_capstone">
+    <Router basename="/wgu_capstone">
       <CapstoneContext>
         <App />
       </CapstoneContext>

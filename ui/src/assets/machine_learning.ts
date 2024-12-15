@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { SetStateAction } from "react";
 import { getMove } from "../api/api";
 import { SelectOption } from "../pages/Compare";
 import { extractStats, POKE_TYPES, TYPE_MATRIX } from "./helpers";
@@ -173,6 +174,33 @@ const reducePp = (
   return movePpMap;
 };
 
+const reduceWinningMoveSet = (winningSets: object[][]): string[] => {
+  const setsByMoveOrder: string[] = [];
+  winningSets.forEach((set, i) => {
+    setsByMoveOrder[i] = JSON.stringify(
+      set.map((m) => m["name" as keyof typeof m])
+    );
+  });
+  const reducedColumn = setsByMoveOrder.reduce<{ [key: string]: number }>(
+    (acc, curr) => {
+      if (Object.keys(acc).includes(curr)) {
+        acc[curr] += 1;
+        return acc;
+      }
+      acc[curr] = 1;
+      return acc;
+    },
+    {}
+  );
+  let reducedSet = "";
+  Object.entries(reducedColumn).forEach(([k, v]) => {
+    if (v === Math.max(...Object.values(reducedColumn))) {
+      reducedSet = k;
+    }
+  });
+  return reducedSet ? (JSON.parse(reducedSet) as string[]) : [];
+};
+
 const decisionTree = (
   selectedMoves: object[],
   movePpMap: { [key: string]: number },
@@ -193,26 +221,16 @@ const decisionTree = (
     return SPLASH;
   }
   // Is there a type advantage on any move?
+  const types = (
+    targetPokemon["types" as keyof typeof targetPokemon] as object[]
+  ).map((t: object) => t["name" as keyof typeof t]);
   if (
-    finalViableMoveSet.some(
-      (move) =>
-        TYPE_MATRIX[
-          POKE_TYPES[
-            move["type" as keyof typeof move]["name"] as keyof typeof POKE_TYPES
-          ]
-        ][
-          POKE_TYPES[
-            targetPokemon["types" as keyof typeof targetPokemon][0][
-              "name"
-            ] as keyof typeof POKE_TYPES
-          ]
-        ] === 2
+    finalViableMoveSet.some((move) =>
+      types.includes(move["type" as keyof typeof move]["name"])
     )
   ) {
-    finalViableMoveSet = finalViableMoveSet.filter(
-      (move) =>
-        move["type" as keyof typeof move] ===
-        targetPokemon["types" as keyof typeof targetPokemon][0]["name"]
+    finalViableMoveSet = finalViableMoveSet.filter((move) =>
+      types.includes(move["type" as keyof typeof move]["name"])
     );
   }
   // Am I defending? Use a more accurate move
@@ -227,7 +245,8 @@ export const predictSuccessOutcome = async (
   selectedPokemon: object,
   selectedMoves: SelectOption[],
   targetPokemon: object,
-  targetPokemonMoves: object[]
+  targetPokemonMoves: object[],
+  setSuggestedMoveSet: React.Dispatch<SetStateAction<string[]>>
 ): Promise<number> => {
   const aMoves = [...selectedMoves].map((m) => m.value);
   const attackerMoves = await Promise.all(aMoves.map((m) => getMove(m))).catch(
@@ -242,7 +261,9 @@ export const predictSuccessOutcome = async (
   // Begin simulations //
   // To start, we will run 100 battle simulations //
   let wins = 0;
+  const winningMoveSets: object[][] = [];
   for (let i = 0; i < 100; i++) {
+    const currentMoveSet: object[] = [];
     let am = [...attackerMoves].reduce<{
       [key: string]: number;
     }>((acc, curr) => {
@@ -273,7 +294,12 @@ export const predictSuccessOutcome = async (
     );
     let moveCount = 0;
     while (+attackerStats["hp"] > 0 && +defenderStats["hp"] > 0) {
-      if (moveCount > 99) break;
+      if (moveCount > 99) {
+        winningMoveSets.push([
+          { name: "This scenario likely results in a struggle." },
+        ]);
+        break;
+      }
       moveCount++;
       // Attacker is faster, attacker attacks first
       if (+attackerStats["speed"] > +defenderStats["speed"]) {
@@ -282,8 +308,10 @@ export const predictSuccessOutcome = async (
         defenderStats["hp"] = `${
           +defenderStats["hp"] - calculateDamage(attack, attacker, defender)
         }`;
+        currentMoveSet.push(attack);
         if (+defenderStats["hp"] <= 0) {
           wins += 1;
+          winningMoveSets.push(currentMoveSet);
           break;
         }
         const defense = decisionTree(defenderMoves, dm, attacker, true);
@@ -306,15 +334,18 @@ export const predictSuccessOutcome = async (
         }
         const attack = decisionTree(attackerMoves, am, defender, true);
         am = reducePp(attack, am);
+        currentMoveSet.push(attack);
         defenderStats["hp"] = `${
           +defenderStats["hp"] - calculateDamage(attack, attacker, defender)
         }`;
         if (+defenderStats["hp"] <= 0) {
           wins += 1;
+          winningMoveSets.push(currentMoveSet);
           break;
         }
       }
     }
   }
+  setSuggestedMoveSet(reduceWinningMoveSet(winningMoveSets));
   return wins;
 };

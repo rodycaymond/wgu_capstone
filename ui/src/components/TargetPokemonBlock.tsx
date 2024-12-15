@@ -24,25 +24,25 @@ export const TargetPokemonBlock: React.FC<TargetPokemonProps> = ({
         <div className="sprite-container">
           <img
             src={getSprite(pokemon["id" as keyof typeof pokemon])}
-            height="250"
-            width="250"
+            height="150"
+            width="150"
           />
         </div>
         <div className="description-container">
-          <div style={{ textDecoration: "underline" }}>
+          <div style={{ textDecoration: "underline", fontSize: 18 }}>
             {(
               pokemon["name" as keyof typeof pokemon][0] as string
             ).toUpperCase() +
               (pokemon["name" as keyof typeof pokemon] as string).substring(1)}
           </div>
-          <div>
+          <div style={{ fontSize: 18 }}>
             Types:{" "}
             {(pokemon["types" as keyof typeof pokemon] as Array<object>)
               .map((t) => t["type" as keyof typeof t]["name"])
               .join(", ")}
           </div>
           {[...selectedMoves].map((m, i) => (
-            <div key={i + 1} style={{ fontSize: "18px" }}>
+            <div key={i + 1}>
               Move {i + 1}: {m["name" as keyof typeof m]}
             </div>
           ))}

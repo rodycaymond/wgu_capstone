@@ -16,10 +16,16 @@ This application does the following things:
 
 The Graphic User Interface (GUI) is created through a React Application, and utilizes Typescript to maintain strong typing throughout the application.
 
-### Backend
+### Data Source
 
-The server is written in Golang because of its strong typing, C-style programming mannerisms, and general syntactic preferences. Golang is becoming more of an industry standard/best practice for its design intentions and security implementations.
+The Pokemon API supplies all application data. <https://pokeapi.co/docs/v2#pokemon>
 
-### Database
+### Setup Instructions
 
-The database is Postgres. This is a personal preference, but there are some advantages to using postgres such as gracefully handling concurrent user interactions and certain language-specific features.
+#### Local Development
+
+- Execute the following commands:
+  - `cd ui`
+  - `yarn install --frozen-lockfile` (this will install a clean package without updating the package.json)
+  - `yarn dev`
+  - view the application at <http://localhost:5173/wgu_capstone>

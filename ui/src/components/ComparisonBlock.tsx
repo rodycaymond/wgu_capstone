@@ -11,6 +11,7 @@ interface ComparisonBlockProps {
   successRate: number | null;
   selectedMoves: SelectOption[];
   setSelectedMoves: React.Dispatch<SetStateAction<SelectOption[]>>;
+  suggestedMoves: string[];
 }
 
 export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
@@ -18,6 +19,7 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
   successRate,
   selectedMoves,
   setSelectedMoves,
+  suggestedMoves,
 }) => {
   const [displayStats, setDisplayStats] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<SelectOption | undefined>(
@@ -117,6 +119,22 @@ export const ComparisonBlock: React.FC<ComparisonBlockProps> = ({
             Move {i + 1}: {m.label}
           </div>
         ))}
+        <div>
+          {suggestedMoves.length > 0 && (
+            <>
+              <div className="compare-left-title">Suggested Move Set</div>
+              <div className="suggested-moves">
+                {[...suggestedMoves].map((m, i) => {
+                  return (
+                    <div key={i} className="suggested-move">
+                      Move {i + 1}: {m}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </>
   );

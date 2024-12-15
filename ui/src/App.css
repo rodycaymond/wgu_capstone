@@ -1,6 +1,7 @@
 .side-navigation {
   height: 100%;
   width: 5%;
+  max-width: 100px;
   position: absolute;
   transition: 0.5s ease-out;
   background-color: rgb(35, 95, 137);
@@ -15,6 +16,7 @@
 
 .nav-open {
   width: 15%;
+  max-width: 300px;
 }
 
 .app-icon {
@@ -222,10 +224,11 @@
   justify-content: center;
   width: 50%;
   flex-grow: 1;
-  font-size: 24px;
+  font-size: 18px;
 }
 .description-container > * {
-  margin: 8px 0;
+  margin: 4px 0;
+  font-size: 12px;
 }
 
 .graph-block {
@@ -243,4 +246,18 @@
   padding: 4px 0;
   font-size: 18px;
   border-bottom: 1px solid rgb(83, 178, 232);
+}
+
+.suggested-moves {
+  width: 90%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: space-around; */
+  flex-wrap: wrap;
+  max-height: 250px;
+}
+
+.suggested-move {
+  width: 25%;
 }
