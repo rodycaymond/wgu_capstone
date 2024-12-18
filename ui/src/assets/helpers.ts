@@ -88,3 +88,32 @@ export const calcBackgroundColor = (rate: number): string => {
   if (rate < 75) return "yellow";
   return "green";
 };
+
+export const convertToRadarData = (
+  data: StatsAndPokemonName[]
+): Record<string, unknown>[] => {
+  let base: Record<string, unknown>[] = [
+    "hp",
+    "speed",
+    "attack",
+    "defense",
+    "special-attack",
+    "special-defense",
+  ].map((a) => ({ attribute: a }));
+  data.forEach((stats) => {
+    const pokemon: string = stats["pokemon"];
+    base = base.map((b) => {
+      const attribute = b["attribute" as keyof typeof b] as string;
+      const p: { [key: string]: number } = { [`${pokemon}`]: 0 };
+      const s: StatsOnly = stats["stats" as keyof typeof stats] as StatsOnly;
+      p[`${pokemon}` as keyof typeof p] = Number(
+        s[attribute as keyof typeof s]
+      ) as unknown as number;
+      return {
+        ...b,
+        ...p,
+      };
+    });
+  });
+  return base;
+};

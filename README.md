@@ -24,6 +24,20 @@ The Pokemon API supplies all application data. <https://pokeapi.co/docs/v2#pokem
 
 #### Local Development
 
+Clone the repository to your local computer.
+
+- `git clone https://github.com/rodycaymond/wgu_capstone.git`
+
+You will require, at a minimum, a Node environment to run this application locally. Alternatively, to see a hosted version of the application visit <http://rodycaymond.github.io/wgu_capstone>.
+
+###### Install Node
+
+To install node, following the documentation here <https://nodejs.org/en/learn/getting-started/how-to-install-nodejs>
+
+##### Application Start Up
+
+Utilizing a terminal or command line, make sure you are at the root directory of this project. (/wgu_capstone)
+
 - Execute the following commands:
   - `cd ui`
   - `yarn install --frozen-lockfile` (this will install a clean package without updating the package.json)
