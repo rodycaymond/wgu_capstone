@@ -164,6 +164,16 @@ const mostPowerful = (moves: object[]): object => {
   return power;
 };
 
+const mostPpLeft = (moves: object[]): object => {
+  let pp: object = moves[0];
+  moves.forEach((move) => {
+    if (move["pp" as keyof typeof move] > pp["pp" as keyof typeof pp]) {
+      pp = move;
+    }
+  });
+  return pp;
+};
+
 const reducePp = (
   move: object,
   movePpMap: { [key: string]: number }
@@ -203,8 +213,10 @@ const reduceWinningMoveSet = (winningSets: object[][]): string[] => {
 
 const decisionTree = (
   selectedMoves: object[],
+  selectedStats: object,
   movePpMap: { [key: string]: number },
   targetPokemon: object,
+  targetStats: object,
   defending: boolean
 ): object => {
   // Do any moves not have PP remaining?
@@ -234,10 +246,21 @@ const decisionTree = (
     );
   }
   // Am I defending? Use a more accurate move
+  const checkHealth =
+    (selectedStats["hp" as keyof typeof selectedStats] as number) >
+    (targetStats["hp" as keyof typeof targetStats] as number);
   if (defending) {
+    // Conserve PP where possible
+    if (checkHealth) {
+      return mostPpLeft(finalViableMoveSet);
+    }
     return mostAccurate(finalViableMoveSet);
   }
 
+  // Conserve PP where possible
+  if (checkHealth) {
+    return mostPpLeft(finalViableMoveSet);
+  }
   return mostPowerful(finalViableMoveSet);
 };
 
@@ -303,7 +326,14 @@ export const predictSuccessOutcome = async (
       moveCount++;
       // Attacker is faster, attacker attacks first
       if (+attackerStats["speed"] > +defenderStats["speed"]) {
-        const attack = decisionTree(attackerMoves, am, defender, false);
+        const attack = decisionTree(
+          attackerMoves,
+          attackerStats,
+          am,
+          defender,
+          defenderStats,
+          false
+        );
         am = reducePp(attack, am);
         defenderStats["hp"] = `${
           +defenderStats["hp"] - calculateDamage(attack, attacker, defender)
@@ -314,7 +344,14 @@ export const predictSuccessOutcome = async (
           winningMoveSets.push(currentMoveSet);
           break;
         }
-        const defense = decisionTree(defenderMoves, dm, attacker, true);
+        const defense = decisionTree(
+          defenderMoves,
+          defenderStats,
+          dm,
+          attacker,
+          attackerStats,
+          true
+        );
         dm = reducePp(defense, dm);
         attackerStats["hp"] = `${
           +attackerStats["hp"] - calculateDamage(defense, defender, attacker)
@@ -324,7 +361,14 @@ export const predictSuccessOutcome = async (
         }
       } else {
         // Defender is faster, defender attacks first
-        const defense = decisionTree(defenderMoves, dm, attacker, false);
+        const defense = decisionTree(
+          defenderMoves,
+          defenderStats,
+          dm,
+          attacker,
+          attackerStats,
+          false
+        );
         dm = reducePp(defense, dm);
         attackerStats["hp"] = `${
           +attackerStats["hp"] - calculateDamage(defense, defender, attacker)
@@ -332,7 +376,14 @@ export const predictSuccessOutcome = async (
         if (+attackerStats["hp"] <= 0) {
           break;
         }
-        const attack = decisionTree(attackerMoves, am, defender, true);
+        const attack = decisionTree(
+          attackerMoves,
+          attackerStats,
+          am,
+          defender,
+          defenderStats,
+          true
+        );
         am = reducePp(attack, am);
         currentMoveSet.push(attack);
         defenderStats["hp"] = `${
